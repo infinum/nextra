@@ -410,7 +410,7 @@ export function normalizePages({
         directories.push(...docsItem.children)
         docsDirectories.push(...docsItem.children)
       }
-    } else {
+    } else if (display !== 'hidden') { {
       directories.push(item)
     }
 
