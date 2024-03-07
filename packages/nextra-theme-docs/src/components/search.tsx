@@ -46,6 +46,10 @@ export function Search({
   const [composition, setComposition] = useState(true)
 
   useEffect(() => {
+    onActive?.(true);
+  }, [onActive]);
+
+  useEffect(() => {
     setActive(0)
   }, [value])
 
@@ -210,7 +214,7 @@ export function Search({
           setShow(Boolean(value))
         }}
         onFocus={() => {
-          onActive?.(true)
+          // onActive?.(true)
           setFocused(true)
         }}
         onBlur={() => {
