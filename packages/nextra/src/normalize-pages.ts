@@ -275,7 +275,9 @@ export function normalizePages({
     }
 
     // If the doc is under the active page root.
-    const isCurrentDocsTree = route.startsWith(docsRoot)
+    // or match the full path or match path with / for nested routes
+    const regex = new RegExp(`${docsRoot}[/]{1}`, 'g');
+    const isCurrentDocsTree = Boolean(route === docsRoot) || Boolean(route.match(regex)?.length);
 
     const normalizedChildren: any =
       a.children &&
