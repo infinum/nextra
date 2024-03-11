@@ -25,5 +25,6 @@ export function RemoteContent({
   }
   const components = useMDXComponents(dynamicComponents)
 
+  //
   return <MDXRemote compiledSource={dynamicContext} components={components} />
 }
