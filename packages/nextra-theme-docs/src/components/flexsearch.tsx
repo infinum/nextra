@@ -244,15 +244,15 @@ export function Flexsearch({
   }
 
   const preload = useCallback(
-    async (active: boolean) => {
+    (active: boolean) => {
       if (active && !indexes[locale]) {
         setLoading(true)
-        try {
-          await loadIndexes(basePath, locale)
-        } catch (e) {
+        loadIndexes(basePath, locale).then(() => {
+          setLoading(false)
+        }).catch(() => {
           setError(true)
-        }
-        setLoading(false)
+          setLoading(false)
+        });
       }
     },
     [locale, basePath]
@@ -263,16 +263,19 @@ export function Flexsearch({
     if (loading) {
       return
     }
-    if (!indexes[locale]) {
+    if (indexes[locale]) {
+      doSearch(value)
+    
+    } else {
       setLoading(true)
-      try {
-        await loadIndexes(basePath, locale)
-      } catch (e) {
+      loadIndexes(basePath, locale).then(() => {
+        setLoading(false)
+        doSearch(value)
+      }).catch(() => {
         setError(true)
-      }
-      setLoading(false)
+        setLoading(false)
+      });
     }
-    doSearch(value)
   }
 
   return (
