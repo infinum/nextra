@@ -18,6 +18,7 @@ type SectionIndex = FlexSearch.Document<
     pageId: string
     content: string
     display?: string
+    preset?: string,
   },
   ['title', 'content', 'url', 'display']
 >
@@ -26,7 +27,8 @@ type PageIndex = FlexSearch.Document<
   {
     id: number
     title: string
-    content: string
+    content: string,
+    preset?: string,
   },
   ['title']
 >
@@ -67,7 +69,7 @@ const loadIndexesImpl = async (
 
   const pageIndex: PageIndex = new FlexSearch.Document({
     cache: 100,
-    tokenize: 'full',
+    tokenize: 'strict',
     document: {
       id: 'id',
       index: 'content',
@@ -77,12 +79,14 @@ const loadIndexesImpl = async (
       resolution: 9,
       depth: 2,
       bidirectional: true
-    }
+    },
+    preset: 'score',
+    worker: true,
   })
 
   const sectionIndex: SectionIndex = new FlexSearch.Document({
     cache: 100,
-    tokenize: 'full',
+    tokenize: 'strict',
     document: {
       id: 'id',
       index: 'content',
@@ -92,8 +96,10 @@ const loadIndexesImpl = async (
     context: {
       resolution: 9,
       depth: 2,
-      bidirectional: true
-    }
+      bidirectional: true,
+    },
+    preset: 'score',
+    worker: true,
   })
 
   let pageId = 0
@@ -152,7 +158,7 @@ export function Flexsearch({
   const [results, setResults] = useState<SearchResult[]>([])
   const [search, setSearch] = useState('')
 
-  const doSearch = (search: string) => {
+  const doSearch = async (search: string) => {
     if (!search) return
     const [pageIndex, sectionIndex] = indexes[locale]
 
@@ -160,7 +166,7 @@ export function Flexsearch({
     const pageResults =
       pageIndex.search<true>(search, 5, {
         enrich: true,
-        suggest: true
+        suggest: true,
       })[0]?.result || []
 
     const results: Result[] = []
@@ -264,17 +270,17 @@ export function Flexsearch({
       return
     }
     if (indexes[locale]) {
-      doSearch(value)
+      await doSearch(value)
     
     } else {
       setLoading(true)
-      loadIndexes(basePath, locale).then(() => {
-        setLoading(false)
-        doSearch(value)
-      }).catch(() => {
+      try {
+        await loadIndexes(basePath, locale)
+        await doSearch(value)
+      } catch {
         setError(true)
-        setLoading(false)
-      });
+      }
+      setLoading(false)
     }
   }
 
