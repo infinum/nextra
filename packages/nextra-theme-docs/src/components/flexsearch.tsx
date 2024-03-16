@@ -1,37 +1,14 @@
 import cn from 'clsx'
 // flexsearch types are incorrect, they were overwritten in tsconfig.json
-import FlexSearch from 'flexsearch'
 import { useRouter } from 'next/router'
-import type { SearchData } from 'nextra'
 import type { ReactElement, ReactNode } from 'react'
 import { useCallback, useState } from 'react'
 import { DEFAULT_LOCALE } from '../constants'
 import type { SearchResult } from '../types'
+import type { TSearchWrapper } from './flexsearch.worker'
+import { loadIndexes } from './flexsearch.worker'
 import { HighlightMatches } from './highlight-matches'
 import { Search } from './search'
-
-type SectionIndex = FlexSearch.Document<
-  {
-    id: string
-    url: string
-    title: string
-    pageId: string
-    content: string
-    display?: string
-    preset?: string,
-  },
-  ['title', 'content', 'url', 'display']
->
-
-type PageIndex = FlexSearch.Document<
-  {
-    id: number
-    title: string
-    content: string,
-    preset?: string,
-  },
-  ['title']
->
 
 type Result = {
   _page_rk: number
@@ -43,109 +20,8 @@ type Result = {
 
 // This can be global for better caching.
 const indexes: {
-  [locale: string]: [PageIndex, SectionIndex]
+  [locale: string]: TSearchWrapper
 } = {}
-
-// Caches promises that load the index
-const loadIndexesPromises = new Map<string, Promise<void>>()
-const loadIndexes = (basePath: string, locale: string): Promise<void> => {
-  const key = basePath + '@' + locale
-  if (loadIndexesPromises.has(key)) {
-    return loadIndexesPromises.get(key)!
-  }
-  const promise = loadIndexesImpl(basePath, locale)
-  loadIndexesPromises.set(key, promise)
-  return promise
-}
-
-const loadIndexesImpl = async (
-  basePath: string,
-  locale: string
-): Promise<void> => {
-  const response = await fetch(
-    `${basePath}/_next/static/chunks/nextra-data-${locale}.json`
-  )
-  const searchData = (await response.json()) as SearchData
-
-  const pageIndex: PageIndex = new FlexSearch.Document({
-    cache: 100,
-    tokenize: 'strict',
-    document: {
-      id: 'id',
-      index: 'content',
-      store: ['title']
-    },
-    context: {
-      resolution: 9,
-      depth: 2,
-      bidirectional: true
-    },
-    preset: 'score',
-    worker: true,
-  })
-
-  const sectionIndex: SectionIndex = new FlexSearch.Document({
-    cache: 100,
-    tokenize: 'strict',
-    document: {
-      id: 'id',
-      index: 'content',
-      tag: 'pageId',
-      store: ['title', 'content', 'url', 'display']
-    },
-    context: {
-      resolution: 9,
-      depth: 2,
-      bidirectional: true,
-    },
-    preset: 'score',
-    worker: true,
-  })
-
-  let pageId = 0
-
-  for (const [route, structurizedData] of Object.entries(searchData)) {
-    let pageContent = ''
-    ++pageId
-
-    for (const [key, content] of Object.entries(structurizedData.data)) {
-      const [headingId, headingValue] = key.split('#')
-      const url = route + (headingId ? '#' + headingId : '')
-      const title = headingValue || structurizedData.title
-      const paragraphs = content.split('\n')
-
-      sectionIndex.add({
-        id: url,
-        url,
-        title,
-        pageId: `page_${pageId}`,
-        content: title,
-        ...(paragraphs[0] && { display: paragraphs[0] })
-      })
-
-      for (let i = 0; i < paragraphs.length; i++) {
-        sectionIndex.add({
-          id: `${url}_${i}`,
-          url,
-          title,
-          pageId: `page_${pageId}`,
-          content: paragraphs[i]
-        })
-      }
-
-      // Add the page itself.
-      pageContent += ` ${title} ${content}`
-    }
-
-    pageIndex.add({
-      id: pageId,
-      title: structurizedData.title,
-      content: pageContent
-    })
-  }
-
-  indexes[locale] = [pageIndex, sectionIndex]
-}
 
 export function Flexsearch({
   className
@@ -160,14 +36,10 @@ export function Flexsearch({
 
   const doSearch = async (search: string) => {
     if (!search) return
-    const [pageIndex, sectionIndex] = indexes[locale]
+    const { page: pageSearch, section: sectionSearch } = indexes[locale]
 
     // Show the results for the top 5 pages
-    const pageResults =
-      pageIndex.search<true>(search, 5, {
-        enrich: true,
-        suggest: true,
-      })[0]?.result || []
+    const pageResults = await pageSearch(search)
 
     const results: Result[] = []
     const pageTitleMatches: Record<number, number> = {}
@@ -177,12 +49,7 @@ export function Flexsearch({
       pageTitleMatches[i] = 0
 
       // Show the top 5 results for each page
-      const sectionResults =
-        sectionIndex.search<true>(search, 5, {
-          enrich: true,
-          suggest: true,
-          tag: `page_${result.id}`
-        })[0]?.result || []
+      const sectionResults = await sectionSearch(search, `page_${result.id}`)
 
       let isFirstItemOfPage = true
       const occurred: Record<string, boolean> = {}
@@ -253,12 +120,15 @@ export function Flexsearch({
     (active: boolean) => {
       if (active && !indexes[locale]) {
         setLoading(true)
-        loadIndexes(basePath, locale).then(() => {
-          setLoading(false)
-        }).catch(() => {
-          setError(true)
-          setLoading(false)
-        });
+        loadIndexes(basePath, locale)
+          .then(workerIndexes => {
+            indexes[locale] = workerIndexes
+            setLoading(false)
+          })
+          .catch(() => {
+            setError(true)
+            setLoading(false)
+          })
       }
     },
     [locale, basePath]
@@ -271,11 +141,11 @@ export function Flexsearch({
     }
     if (indexes[locale]) {
       await doSearch(value)
-    
     } else {
       setLoading(true)
       try {
-        await loadIndexes(basePath, locale)
+        const workerIndexes = await loadIndexes(basePath, locale)
+        indexes[locale] = workerIndexes
         await doSearch(value)
       } catch {
         setError(true)
