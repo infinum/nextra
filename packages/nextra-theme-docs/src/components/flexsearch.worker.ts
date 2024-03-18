@@ -59,14 +59,9 @@ export async function loadIndexes(
 ): Promise<TSearchWrapper> {
   workerInstance ??= new Worker('/docs/search.worker.js')
 
-  const response = await fetch(
-    `${basePath}/_next/static/chunks/nextra-data-${locale}.json`
-  )
-  const searchData = await response.json()
   await callWorker<TSearchWrapper>(workerInstance, 'init', {
     locale,
-    basePath,
-    searchData
+    basePath
   })
 
   return {
