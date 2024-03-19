@@ -2,7 +2,7 @@ import cn from 'clsx'
 // flexsearch types are incorrect, they were overwritten in tsconfig.json
 import { useRouter } from 'next/router'
 import type { ReactElement, ReactNode } from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_LOCALE } from '../constants'
 import type { SearchResult } from '../types'
 import type { TSearchWrapper } from './flexsearch.worker'
@@ -136,9 +136,6 @@ export function Flexsearch({
 
   const handleChange = async (value: string) => {
     setSearch(value)
-    if (loading) {
-      return
-    }
     if (indexes[locale]) {
       await doSearch(value)
     } else {
@@ -154,13 +151,16 @@ export function Flexsearch({
     }
   }
 
+  useEffect(() => {
+    preload(true)
+  }, [preload])
+
   return (
     <Search
       loading={loading}
       error={error}
       value={search}
       onChange={handleChange}
-      onActive={preload}
       className={className}
       overlayClassName="nx-w-screen nx-min-h-[100px] nx-max-w-[min(calc(100vw-2rem),calc(100%+20rem))]"
       results={results}
