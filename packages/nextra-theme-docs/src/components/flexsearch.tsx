@@ -42,11 +42,9 @@ export function Flexsearch({
     const pageResults = await pageSearch(search)
 
     const results: Result[] = []
-    const pageTitleMatches: Record<number, number> = {}
 
     for (let i = 0; i < pageResults.length; i++) {
       const result = pageResults[i]
-      pageTitleMatches[i] = 0
 
       // Show the top 5 results for each page
       const sectionResults = await sectionSearch(search, `page_${result.id}`)
@@ -56,10 +54,6 @@ export function Flexsearch({
 
       for (let j = 0; j < sectionResults.length; j++) {
         const { doc } = sectionResults[j]
-        const isMatchingTitle = doc.display !== undefined
-        if (isMatchingTitle) {
-          pageTitleMatches[i]++
-        }
         const { url, title } = doc
         const content = doc.display || doc.content
         if (occurred[url + '@' + content]) continue
@@ -96,23 +90,12 @@ export function Flexsearch({
     }
 
     setResults(
-      results
-        .sort((a, b) => {
-          // Sort by number of matches in the title.
-          if (a._page_rk === b._page_rk) {
-            return a._section_rk - b._section_rk
-          }
-          if (pageTitleMatches[a._page_rk] !== pageTitleMatches[b._page_rk]) {
-            return pageTitleMatches[b._page_rk] - pageTitleMatches[a._page_rk]
-          }
-          return a._page_rk - b._page_rk
-        })
-        .map(res => ({
-          id: `${res._page_rk}_${res._section_rk}`,
-          route: res.route,
-          prefix: res.prefix,
-          children: res.children
-        }))
+      results.map(res => ({
+        id: `${res._page_rk}_${res._section_rk}`,
+        route: res.route,
+        prefix: res.prefix,
+        children: res.children
+      }))
     )
   }
 
