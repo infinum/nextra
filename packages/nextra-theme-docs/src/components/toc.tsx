@@ -24,7 +24,7 @@ export function TOC({ headings, filePath }: TOCProps): ReactElement {
   const tocRef = useRef<HTMLDivElement>(null)
 
   const items = useMemo(
-    () => headings.filter(heading => heading.depth > 1),
+    () => headings.filter(heading => heading.depth > 1 && heading.depth < 4),
     [headings]
   )
 
