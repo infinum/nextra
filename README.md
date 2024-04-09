@@ -51,3 +51,10 @@ Any change to example/docs will be re-rendered instantly.
 
 If you update the core or theme packages, a rebuild is required. Or you can use
 the watch mode for both nextra and the theme in separated terminals.
+
+## Changelog after fork
+- fixed issue with hidden included in mobile sidebar
+- fixed issue with included items from folder with overlapping name (example: /conversations and /conversations-api)
+- limited depth for displaying in TOC to 4
+- search - moved logic to service worker to remove the glitch in input on first search
+         - optimised search results 
