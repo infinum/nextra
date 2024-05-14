@@ -257,7 +257,8 @@ function File({
         {renderComponent(config.sidebar.titleComponent, {
           title: item.title,
           type: item.type,
-          route: item.route
+          // if route is set to #, items in sidebar do not have route set and we cannot set custom styling in sidebar title component
+          route: item.route === "#" ? ((item as PageItem).href || '') : item.route,
         })}
       </Anchor>
       {active && anchors.length > 0 && (
