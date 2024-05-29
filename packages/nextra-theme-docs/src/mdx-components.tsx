@@ -12,6 +12,7 @@ import { useIntersectionObserver, useSlugs } from './contexts/active-anchor'
 // Anchor links
 function HeadingLink({
   tag: Tag,
+  depth,
   context,
   children,
   id,
@@ -20,6 +21,7 @@ function HeadingLink({
 }: ComponentProps<'h2'> & {
   tag: `h${2 | 3 | 4 | 5 | 6}`
   context: { index: number }
+  depth?: number,
 }): ReactElement {
   const setActiveAnchor = useSetActiveAnchor()
   const slugs = useSlugs()
@@ -30,6 +32,7 @@ function HeadingLink({
     if (!id) return
     const heading = obRef.current
     if (!heading) return
+    if (depth && depth > 3) return;
     slugs.set(heading, [id, (context.index += 1)])
     observer?.observe(heading)
 
@@ -197,11 +200,11 @@ export const getComponents = ({
         {...props}
       />
     ),
-    h2: props => <HeadingLink tag="h2" context={context} {...props} />,
-    h3: props => <HeadingLink tag="h3" context={context} {...props} />,
-    h4: props => <HeadingLink tag="h4" context={context} {...props} />,
-    h5: props => <HeadingLink tag="h5" context={context} {...props} />,
-    h6: props => <HeadingLink tag="h6" context={context} {...props} />,
+    h2: props => <HeadingLink tag="h2" context={context} depth={2} {...props} />,
+    h3: props => <HeadingLink tag="h3" context={context} depth={3}  {...props} />,
+    h4: props => <HeadingLink tag="h4" context={context} depth={4}  {...props} />,
+    h5: props => <HeadingLink tag="h5" context={context} depth={5}  {...props} />,
+    h6: props => <HeadingLink tag="h6" context={context} depth={6}  {...props} />,
     ul: props => (
       <ul
         className="nx-mt-6 nx-list-disc first:nx-mt-0 ltr:nx-ml-6 rtl:nx-mr-6"
