@@ -9,6 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@infinum/nextra": "link:../packages/nextra",
+    "@infinum/nextra-theme-docs": "link:../packages/nextra-theme-docs",
     "@vercel/og": "^0.5.0",
     "clsx": "^2.0.0",
     "framer-motion": "^10.0.0",

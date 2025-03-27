@@ -10,7 +10,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@infinum/nextra": "link:../../packages/nextra",
     "next": "^13.5.6",
+    "nextra-theme-blog": "link:../packages/nextra-theme-blog",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

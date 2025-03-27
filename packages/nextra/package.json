@@ -1,5 +1,5 @@
 {
-  "name": "@infinum/nextra",
+  "name": "nextra",
   "version": "2.13.17",
   "description": "Next.js and MDX based site generator.",
   "repository": "https://github.com/infinum/nextra",

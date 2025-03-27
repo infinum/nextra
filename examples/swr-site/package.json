@@ -12,6 +12,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@infinum/nextra": "link:../../packages/nextra",
     "focus-visible": "^5.1.0",
     "intersection-observer": "^0.10.0",
     "isomorphic-git": "1.21.0",
