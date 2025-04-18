@@ -275,3 +275,4 @@ export {
   ThemeSwitch,
   LocaleSwitch
 } from './components'
+export { getSearchWorkerInstance } from './utils'
