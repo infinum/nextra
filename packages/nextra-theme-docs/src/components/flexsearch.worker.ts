@@ -1,6 +1,9 @@
 import type FlexSearch from 'flexsearch'
 import type { EnrichedDocumentSearchResultSetUnitResultUnit } from 'flexsearch'
+<<<<<<< HEAD
 import { getSearchWorkerInstance } from '../utils'
+=======
+>>>>>>> 461fdea68 (Initial Commit)
 
 export type SectionIndex = FlexSearch.Document<
   {
@@ -52,11 +55,20 @@ function callWorker<T>(worker: Worker, type: string, payload: any): Promise<T> {
   })
 }
 
+<<<<<<< HEAD
+=======
+let workerInstance: Worker | null = null
+
+>>>>>>> 461fdea68 (Initial Commit)
 export async function loadIndexes(
   basePath: string,
   locale: string
 ): Promise<TSearchWrapper> {
+<<<<<<< HEAD
   const workerInstance = getSearchWorkerInstance();
+=======
+  workerInstance ??= new Worker('/docs/search.worker.js')
+>>>>>>> 461fdea68 (Initial Commit)
 
   await callWorker<TSearchWrapper>(workerInstance, 'init', {
     locale,
