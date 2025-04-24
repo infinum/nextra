@@ -69,7 +69,7 @@ export async function loadIndexes(
     ): Promise<
       Array<EnrichedDocumentSearchResultSetUnitResultUnit<TPageItem>>
     > {
-      return callWorker(workerInstance!, 'search', {
+      return callWorker(workerInstance, 'search', {
         scope: SearchScope.Page,
         query,
         locale,
@@ -82,7 +82,7 @@ export async function loadIndexes(
     ): Promise<
       Array<EnrichedDocumentSearchResultSetUnitResultUnit<TSectionItem>>
     > {
-      return callWorker(workerInstance!, 'search', {
+      return callWorker(workerInstance, 'search', {
         scope: SearchScope.Section,
         query,
         tag,
