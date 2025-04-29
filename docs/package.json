@@ -13,9 +13,8 @@
     "clsx": "^2.0.0",
     "framer-motion": "^10.0.0",
     "next": "^13.5.6",
-    "nextra": "workspace:*",
-    "nextra-theme-docs": "workspace:*",
-    "react": "^18.2.0",
+    "nextra": "workspace:@infinum/nextra@*",
+    "nextra-theme-docs": "workspace:@infinum/nextra-theme-docs@*",
     "react-dom": "^18.2.0",
     "sharp": "^0.32.6"
   },
