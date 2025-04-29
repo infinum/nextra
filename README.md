@@ -57,4 +57,6 @@ the watch mode for both nextra and the theme in separated terminals.
 - fixed issue with included items from folder with overlapping name (example: /conversations and /conversations-api)
 - limited depth for displaying in TOC to 4
 - search - moved logic to service worker to remove the glitch in input on first search
-         - optimised search results 
+- optimised search results 
+- exposed search worker instance via getSearchWorkerInstance from nextra-theme-docs
+- fixed build
